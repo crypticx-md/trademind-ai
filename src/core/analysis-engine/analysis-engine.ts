@@ -20,12 +20,18 @@ import {
   ATRService,
 } from "./indicators/atr.service";
 
+import {
+  VolumeAnalysisResult,
+  VolumeService,
+} from "./volume/volume.service";
+
 export interface AnalysisResult {
   statistics: StatisticsResult;
   indicators: {
     ema: EMAResult[];
     rsi: RSIResult;
     atr: ATRResult;
+     volume: VolumeAnalysisResult;
   };
 }
 
@@ -34,6 +40,7 @@ export class AnalysisEngine {
   private readonly emaService = new EMAService();
   private readonly rsiService = new RSIService();
   private readonly atrService = new ATRService();
+  private readonly volumeService = new VolumeService();
 
   analyzeCandles(candles: Candle[]): AnalysisResult {
     const closePrices = candles.map((candle) => candle.close);
@@ -50,6 +57,8 @@ export class AnalysisEngine {
 
     const atr = this.atrService.analyze(candles, 14);
 
+    const volume = this.volumeService.analyze(candles, 20);
+
     return {
       statistics,
 
@@ -57,6 +66,7 @@ export class AnalysisEngine {
         ema,
         rsi,  
         atr, 
+        volume,
       },
     };
   }
