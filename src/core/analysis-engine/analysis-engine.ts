@@ -15,11 +15,17 @@ import {
   RSIService,
 } from "./indicators/rsi.service";
 
+import {
+  ATRResult,
+  ATRService,
+} from "./indicators/atr.service";
+
 export interface AnalysisResult {
   statistics: StatisticsResult;
   indicators: {
     ema: EMAResult[];
     rsi: RSIResult;
+    atr: ATRResult;
   };
 }
 
@@ -27,6 +33,7 @@ export class AnalysisEngine {
   private readonly statisticsService = new StatisticsService();
   private readonly emaService = new EMAService();
   private readonly rsiService = new RSIService();
+  private readonly atrService = new ATRService();
 
   analyzeCandles(candles: Candle[]): AnalysisResult {
     const closePrices = candles.map((candle) => candle.close);
@@ -41,12 +48,15 @@ export class AnalysisEngine {
 
     const rsi = this.rsiService.analyze(closePrices, 14);
 
+    const atr = this.atrService.analyze(candles, 14);
+
     return {
       statistics,
 
       indicators: {
         ema,
         rsi,  
+        atr, 
       },
     };
   }
