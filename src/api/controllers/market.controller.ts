@@ -15,7 +15,7 @@ export class MarketController {
         exchange: "mexc",
         symbol: "BTCUSDT",
         timeframe: "60m",
-        limit: 10,
+        limit: 250,
       });
 
       res.status(200).json({
@@ -46,7 +46,7 @@ export class MarketController {
         exchange: "mexc",
         symbol: "BTCUSDT",
         timeframe: "60m",
-        limit: 10,
+        limit: 250,
       });
 
       const analysis = analysisEngine.analyzeCandles(candles);
