@@ -25,6 +25,11 @@ import {
   VolumeService,
 } from "./volume/volume.service";
 
+import {
+  TrendAnalysisResult,
+  TrendService,
+} from "./trend/trend.service";
+
 export interface AnalysisResult {
   statistics: StatisticsResult;
   indicators: {
@@ -33,6 +38,8 @@ export interface AnalysisResult {
     atr: ATRResult;
      volume: VolumeAnalysisResult;
   };
+
+  trend: TrendAnalysisResult;
 }
 
 export class AnalysisEngine {
@@ -41,6 +48,7 @@ export class AnalysisEngine {
   private readonly rsiService = new RSIService();
   private readonly atrService = new ATRService();
   private readonly volumeService = new VolumeService();
+  private readonly trendService = new TrendService();
 
   analyzeCandles(candles: Candle[]): AnalysisResult {
     const closePrices = candles.map((candle) => candle.close);
@@ -52,6 +60,8 @@ export class AnalysisEngine {
       closePrices,
       [9, 20, 50, 100, 200]
     );
+
+    const trend = this.trendService.analyzeEMA(ema);
 
     const rsi = this.rsiService.analyze(closePrices, 14);
 
@@ -68,6 +78,9 @@ export class AnalysisEngine {
         atr, 
         volume,
       },
+
+        trend,
+
     };
   }
 }
