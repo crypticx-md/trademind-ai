@@ -1,4 +1,5 @@
 import { EMAResult } from "../indicators/ema.service";
+import { RSIResult } from "../indicators/rsi.service";
 
 export type TrendDirection =
   | "BULLISH"
@@ -19,7 +20,8 @@ export interface TrendAnalysisResult {
 
 export class TrendService {
   analyzeEMA(emaResults: EMAResult[],
-             currentPrice: number
+             currentPrice: number,
+              rsi: RSIResult
   ): TrendAnalysisResult {
     const ema9 = this.getEMA(emaResults, 9);
     const ema20 = this.getEMA(emaResults, 20);
@@ -68,6 +70,13 @@ const pricePositionScore =
   const combinedScore =
   emaStructureScore * 0.6 +
   pricePositionScore * 0.4;
+
+  const rsiMomentumScore =
+  (rsi.value - 50) * 2;
+  
+  const finalScore =
+  combinedScore * 0.8 +
+  rsiMomentumScore * 0.2;
 
    const absoluteScore = Math.abs(combinedScore);
 

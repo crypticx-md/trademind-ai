@@ -61,6 +61,7 @@ export class AnalysisEngine {
       [9, 20, 50, 100, 200]
     );
 
+   const rsi = this.rsiService.analyze(closePrices, 14);
  
     const currentPrice =
   closePrices[closePrices.length - 1];
@@ -72,9 +73,12 @@ if (currentPrice === undefined) {
 }
 
    const trend =
-  this.trendService.analyzeEMA(ema, currentPrice);
+  this.trendService.analyzeEMA(ema, 
+                               currentPrice,
+                               rsi
 
-    const rsi = this.rsiService.analyze(closePrices, 14);
+  );
+
 
     const atr = this.atrService.analyze(candles, 14);
 
