@@ -1,5 +1,6 @@
 import { EMAResult } from "../indicators/ema.service";
 import { RSIResult } from "../indicators/rsi.service";
+import { VolumeAnalysisResult } from "../volume/volume.service";
 
 export type TrendDirection =
   | "BULLISH"
@@ -21,7 +22,8 @@ export interface TrendAnalysisResult {
 export class TrendService {
   analyzeEMA(emaResults: EMAResult[],
              currentPrice: number,
-              rsi: RSIResult
+              rsi: RSIResult,
+               volume: VolumeAnalysisResult
   ): TrendAnalysisResult {
     const ema9 = this.getEMA(emaResults, 9);
     const ema20 = this.getEMA(emaResults, 20);
@@ -78,14 +80,35 @@ const pricePositionScore =
   combinedScore * 0.8 +
   rsiMomentumScore * 0.2;
 
-   const absoluteScore = Math.abs(combinedScore);
+  let volumeConfirmationScore = 0;
+
+if (volume.relativeVolume >= 1.5) {
+  volumeConfirmationScore = 20;
+} else if (volume.relativeVolume >= 1.1) {
+  volumeConfirmationScore = 10;
+} else if (volume.relativeVolume < 0.7) {
+  volumeConfirmationScore = -15;
+} else if (volume.relativeVolume < 0.9) {
+  volumeConfirmationScore = -5;
+}
+
+const directionMultiplier =
+  finalScore > 0 ? 1 :
+  finalScore < 0 ? -1 :
+  0;
+
+  const volumeAdjustedScore =
+  finalScore +
+  volumeConfirmationScore * directionMultiplier;
+
+   const absoluteScore = Math.abs(volumeAdjustedScore);
 
 let direction: TrendDirection = "NEUTRAL";
 let strength: TrendStrength = "WEAK";
 
-if (combinedScore >= 20) {
+if (volumeAdjustedScore >= 20) {
   direction = "BULLISH";
-} else if (combinedScore <= -20) {
+} else if (volumeAdjustedScore <= -20) {
   direction = "BEARISH";
 }
 
@@ -103,7 +126,7 @@ const confidence = Math.min(
 return {
   direction,
   strength,
-  score: Math.round(combinedScore),
+  score: Math.round(volumeAdjustedScore),
   confidence,
 };
   }
