@@ -61,7 +61,18 @@ export class AnalysisEngine {
       [9, 20, 50, 100, 200]
     );
 
-    const trend = this.trendService.analyzeEMA(ema);
+ 
+    const currentPrice =
+  closePrices[closePrices.length - 1];
+
+if (currentPrice === undefined) {
+  throw new Error(
+    "Unable to determine current price for trend analysis."
+  );
+}
+
+   const trend =
+  this.trendService.analyzeEMA(ema, currentPrice);
 
     const rsi = this.rsiService.analyze(closePrices, 14);
 
