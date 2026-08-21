@@ -1,6 +1,7 @@
 import { EMAResult } from "../indicators/ema.service";
 import { RSIResult } from "../indicators/rsi.service";
 import { VolumeAnalysisResult } from "../volume/volume.service";
+import { ATRResult } from "../indicators/atr.service";
 
 export type TrendDirection =
   | "BULLISH"
@@ -23,7 +24,8 @@ export class TrendService {
   analyzeEMA(emaResults: EMAResult[],
              currentPrice: number,
               rsi: RSIResult,
-               volume: VolumeAnalysisResult
+               volume: VolumeAnalysisResult,
+               atr: ATRResult
   ): TrendAnalysisResult {
     const ema9 = this.getEMA(emaResults, 9);
     const ema20 = this.getEMA(emaResults, 20);
@@ -118,9 +120,24 @@ if (absoluteScore >= 70) {
   strength = "MODERATE";
 }
 
+let volatilityAdjustment = 0;
+
+if (atr.regime === "HIGH_VOLATILITY") {
+  volatilityAdjustment = -10;
+} else if (atr.regime === "LOW_VOLATILITY") {
+  volatilityAdjustment = -5;
+}
+
 const confidence = Math.min(
   100,
-  Math.round(50 + absoluteScore * 0.5)
+  Math.max(
+    0,
+    Math.round(
+      50 +
+      absoluteScore * 0.5 +
+      volatilityAdjustment
+    )
+  )
 );
 
 return {

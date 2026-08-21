@@ -1,8 +1,16 @@
 import { Candle } from "../../../shared/types/market.types";
 
+export type VolatilityRegime =
+  | "LOW_VOLATILITY"
+  | "NORMAL_VOLATILITY"
+  | "HIGH_VOLATILITY";
+
 export interface ATRResult {
   period: number;
   value: number;
+  averageATR: number;
+  relativeATR: number;
+  regime: VolatilityRegime;
 }
 
 export class ATRService {
@@ -56,10 +64,44 @@ export class ATRService {
     return atr;
   }
 
-  analyze(candles: Candle[], period = 14): ATRResult {
-    return {
-      period,
-      value: this.calculate(candles, period),
-    };
+ analyze(candles: Candle[], period = 14): ATRResult {
+  const value = this.calculate(candles, period);
+
+  const recentCandles = candles.slice(-(period * 3));
+
+  const atrValues: number[] = [];
+
+  for (let i = period + 1; i <= recentCandles.length; i++) {
+    const subset = recentCandles.slice(0, i);
+
+    atrValues.push(
+      this.calculate(subset, period)
+    );
   }
+
+  const averageATR =
+    atrValues.reduce((sum, atr) => sum + atr, 0) /
+    atrValues.length;
+
+  const relativeATR =
+    averageATR === 0
+      ? 1
+      : value / averageATR;
+
+  let regime: VolatilityRegime = "NORMAL_VOLATILITY";
+
+  if (relativeATR >= 1.3) {
+    regime = "HIGH_VOLATILITY";
+  } else if (relativeATR <= 0.7) {
+    regime = "LOW_VOLATILITY";
+  }
+
+  return {
+    period,
+    value,
+    averageATR,
+    relativeATR,
+    regime,
+  };
+}
 }

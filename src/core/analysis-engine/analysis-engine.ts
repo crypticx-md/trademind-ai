@@ -73,17 +73,19 @@ if (currentPrice === undefined) {
 }
 
    const volume = this.volumeService.analyze(candles, 20);
+    const atr = this.atrService.analyze(candles, 14);
 
    const trend =
   this.trendService.analyzeEMA(ema, 
                                currentPrice,
                                rsi,
-                               volume
+                               volume,
+                               atr,
 
   );
 
 
-    const atr = this.atrService.analyze(candles, 14);
+   
 
 
     return {
