@@ -15,11 +15,15 @@ export interface PriceLevel {
   touches: number;
   distanceFromCurrentPrice: number;
   strength: LevelStrength;
+  candlesSinceLastTouch: number;
+  qualityScore: number;
 }
 
 export interface SupportResistanceResult {
   nearestSupport: PriceLevel | null;
   nearestResistance: PriceLevel | null;
+  bestSupport: PriceLevel | null;
+bestResistance: PriceLevel | null;
   levels: PriceLevel[];
 }
 
@@ -31,6 +35,8 @@ export class SupportResistanceService {
       return {
         nearestSupport: null,
         nearestResistance: null,
+        bestSupport: null,
+        bestResistance: null,
         levels: [],
       };
     }
@@ -62,8 +68,11 @@ export class SupportResistanceService {
     Math.abs(level.price - candle.high) <= clusteringThreshold
 );
 
+
 if (existingResistance) {
   const totalTouches = existingResistance.touches + 1;
+  existingResistance.candlesSinceLastTouch =
+  candles.length - 1 - i;
 
   existingResistance.price =
     (existingResistance.price * existingResistance.touches +
@@ -90,6 +99,8 @@ if (existingResistance) {
       candle.high - currentPrice
     ),
     strength: "WEAK",
+    candlesSinceLastTouch: candles.length - 1 - i,
+    qualityScore: 0,
   });
 }
       }
@@ -103,6 +114,8 @@ if (existingResistance) {
 
 if (existingSupport) {
   const totalTouches = existingSupport.touches + 1;
+  existingSupport.candlesSinceLastTouch =
+  candles.length - 1 - i;
 
   existingSupport.price =
     (existingSupport.price * existingSupport.touches +
@@ -129,9 +142,34 @@ if (existingSupport) {
       candle.low - currentPrice
     ),
     strength: "WEAK",
+    candlesSinceLastTouch: candles.length - 1 - i,
+    qualityScore: 0,
   });
 }      }
     }
+
+    for (const level of clusteredLevels) {
+  const touchScore = Math.min(level.touches * 10, 50);
+
+  const recencyScore = Math.max(
+    0,
+    30 - level.candlesSinceLastTouch
+  );
+
+  const distancePercent =
+    level.distanceFromCurrentPrice / currentPrice;
+
+  const distanceScore = Math.max(
+    0,
+    20 - distancePercent * 1000
+  );
+
+  level.qualityScore = Math.round(
+    touchScore +
+    recencyScore +
+    distanceScore
+  );
+}
 
  const supports = clusteredLevels
   .filter(
@@ -163,9 +201,25 @@ const nearestSupport =
 const nearestResistance =
   resistances.length > 0 ? resistances[0] : null;
 
+  const bestSupport =
+  supports.length > 0
+    ? [...supports].sort(
+        (a, b) => b.qualityScore - a.qualityScore
+      )[0]
+    : null;
+
+const bestResistance =
+  resistances.length > 0
+    ? [...resistances].sort(
+        (a, b) => b.qualityScore - a.qualityScore
+      )[0]
+    : null;
+
 return {
   nearestSupport,
   nearestResistance,
+   bestSupport,
+  bestResistance,
   levels: clusteredLevels,
 };
   }
