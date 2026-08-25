@@ -40,6 +40,11 @@ import {
   SupportResistanceService,
 } from "./support-resistance/support-resistance.service";
 
+import {
+  DecisionEngineService,
+  DecisionResult,
+} from "./decision-engine/decision-engine.service";
+
 export interface AnalysisResult {
   statistics: StatisticsResult;
   indicators: {
@@ -52,6 +57,7 @@ export interface AnalysisResult {
   trend: TrendAnalysisResult;
    marketStructure: MarketStructureResult;
    supportResistance: SupportResistanceResult;
+   decision: DecisionResult;
 }
 
 export class AnalysisEngine {
@@ -63,6 +69,7 @@ export class AnalysisEngine {
   private readonly trendService = new TrendService();
   private readonly marketStructureService = new MarketStructureService();
   private readonly supportResistanceService = new SupportResistanceService();
+ private readonly decisionEngineService = new DecisionEngineService();
 
   analyzeCandles(candles: Candle[]): AnalysisResult {
     const closePrices = candles.map((candle) => candle.close);
@@ -95,6 +102,7 @@ if (currentPrice === undefined) {
                                rsi,
                                volume,
                                atr,
+                               
 
   );
 
@@ -103,6 +111,13 @@ if (currentPrice === undefined) {
 
   const supportResistance =
   this.supportResistanceService.analyze(candles);
+
+  const decision =
+  this.decisionEngineService.analyze(
+    trend,
+    marketStructure,
+    supportResistance,
+  );
 
 
    
@@ -116,11 +131,14 @@ if (currentPrice === undefined) {
         rsi,  
         atr, 
         volume,
+    
       },
 
         trend,
          marketStructure,
          supportResistance,
+         decision,
+         
 
     };
   }
