@@ -11,6 +11,13 @@ export interface DecisionResult {
   signal: TradeSignal;
   score: number;
   confidence: number;
+
+   breakdown: {
+    trendAndStructure: number;
+    rsi: number;
+    volume: number;
+    supportResistance: number;
+  };
 }
 
 export class DecisionEngineService {
@@ -18,15 +25,24 @@ export class DecisionEngineService {
     trend: TrendAnalysisResult,
     marketStructure: MarketStructureResult,
     supportResistance: SupportResistanceResult,
+    rsi: number,
+    volumeStatus: string,
   ): DecisionResult {
 
   let score = 0;
+
+
+  let trendAndStructureScore = 0;
+  let rsiScore = 0;
+  let volumeScore = 0;
+  let supportResistanceScore = 0;
 
 if (
   trend.direction === "BULLISH" &&
   marketStructure.direction === "BULLISH"
 ) {
   score += 60;
+  trendAndStructureScore += 60;
 }
 
 if (
@@ -34,6 +50,7 @@ if (
   marketStructure.direction === "BEARISH"
 ) {
   score -= 60;
+  trendAndStructureScore -= 60;
 }
 
 if (
@@ -41,6 +58,7 @@ if (
   marketStructure.direction === "BEARISH"
 ) {
   score -= 20;
+  trendAndStructureScore -= 20;
 }
 
 if (
@@ -48,7 +66,50 @@ if (
   marketStructure.direction === "BULLISH"
 ) {
   score += 20;
+  trendAndStructureScore += 20;
 }
+
+if (rsi >= 55 && rsi <= 70) {
+  score += 10;
+  rsiScore += 10;
+}
+
+if (rsi <= 45 && rsi >= 30) {
+  score -= 10;
+  rsiScore -= 10;
+}
+
+if (rsi > 70) {
+  score -= 10;
+  rsiScore -= 10;
+}
+
+if (rsi < 30) {
+  score += 10;
+  rsiScore += 10;
+}
+
+
+if (volumeStatus === "ABOVE_AVERAGE") {
+  if (trend.direction === "BULLISH") {
+    score += 10;
+    volumeScore += 10;
+  } else if (trend.direction === "BEARISH") {
+    score -= 10;
+    volumeScore -= 10;
+  }
+}
+
+if (volumeStatus === "BELOW_AVERAGE") {
+  if (trend.direction === "BULLISH") {
+    score -= 10;
+    volumeScore -= 10;
+  } else if (trend.direction === "BEARISH") {
+    score += 10;
+    volumeScore += 10;
+  }
+}
+
 
 const nearestResistance =
   supportResistance.nearestResistance;
@@ -66,6 +127,7 @@ if (trend.direction === "BULLISH" && nearestResistance) {
     nearestResistance.qualityScore >= 40
   ) {
     score -= 20;
+    supportResistanceScore -= 20;
   }
 }
 
@@ -79,6 +141,7 @@ if (trend.direction === "BEARISH" && nearestSupport) {
     nearestSupport.qualityScore >= 40
   ) {
     score += 20;
+    supportResistanceScore += 20;
   }
 }
 
@@ -104,6 +167,12 @@ return {
   signal,
   score,
   confidence,
-};
+  breakdown: {
+    trendAndStructure: trendAndStructureScore,
+    rsi: rsiScore,
+    volume: volumeScore,
+    supportResistance: supportResistanceScore,
+  },
+}; 
   }
 }

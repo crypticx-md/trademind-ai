@@ -117,6 +117,8 @@ if (currentPrice === undefined) {
     trend,
     marketStructure,
     supportResistance,
+     rsi.value,
+    volume.status
   );
 
 
