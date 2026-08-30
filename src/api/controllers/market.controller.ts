@@ -11,9 +11,15 @@ export class MarketController {
     res: Response
   ): Promise<void> {
     try {
+
+    const symbol =
+  typeof req.query.symbol === "string"
+    ? req.query.symbol.toUpperCase()
+    : "BTCUSDT";
+
       const candles = await dataEngine.getCandles({
         exchange: "mexc",
-        symbol: "BTCUSDT",
+        symbol,
         timeframe: "60m",
         limit: 250,
       });
@@ -42,9 +48,14 @@ export class MarketController {
     res: Response
   ): Promise<void> {
     try {
+      const symbol =
+  typeof req.query.symbol === "string"
+    ? req.query.symbol.toUpperCase()
+    : "BTCUSDT";
+      
       const candles = await dataEngine.getCandles({
         exchange: "mexc",
-        symbol: "BTCUSDT",
+        symbol,
         timeframe: "60m",
         limit: 250,
       });
@@ -55,7 +66,7 @@ export class MarketController {
         success: true,
         market: {
           exchange: "mexc",
-          symbol: "BTCUSDT",
+          symbol,
           timeframe: "60m",
         },
         analysis,
@@ -70,4 +81,45 @@ export class MarketController {
       });
     }
   }
+
+  static async searchSymbols(
+  req: Request,
+  res: Response
+): Promise<void> {
+
+  try {
+  const query =
+    typeof req.query.q === "string"
+      ? req.query.q.toUpperCase()
+      : "";
+
+  const symbols = await dataEngine.getSymbols("mexc");
+
+  const matches = symbols
+  .filter((symbol) => symbol.includes(query))
+  .sort((a, b) => {
+    const aStartsWith = a.startsWith(query);
+    const bStartsWith = b.startsWith(query);
+
+    if (aStartsWith && !bStartsWith) return -1;
+    if (!aStartsWith && bStartsWith) return 1;
+
+    return a.localeCompare(b);
+  });
+  
+  res.status(200).json({
+    success: true,
+    query,
+    results: matches,
+  });
+} catch (error) {
+  console.error("Symbol search error:", error);
+
+  res.status(500).json({
+    success: false,
+    message: "Unable to search market symbols.",
+  });
+}
+
+}
 }

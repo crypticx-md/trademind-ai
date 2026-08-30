@@ -13,5 +13,13 @@ export class DataEngine {
       timeframe: request.timeframe,
       limit: request.limit,
     });
+    
   }
+  
+  async getSymbols(exchange: string): Promise<string[]> {
+  const exchangeAdapter = ExchangeFactory.create(exchange);
+
+  return exchangeAdapter.getSymbols();
+}
+
 }

@@ -16,6 +16,12 @@ type MexcKline = [
   string
 ];
 
+type MexcExchangeInfoResponse = {
+  symbols: {
+    symbol: string;
+  }[];
+};
+
 export class MexcExchangeAdapter implements ExchangeAdapter {
   readonly name = "mexc";
 
@@ -29,8 +35,12 @@ export class MexcExchangeAdapter implements ExchangeAdapter {
           limit: request.limit,
         },
         timeout: 10000,
+        
       }
+      
     );
+
+    
 
     if (!Array.isArray(response.data)) {
       throw new Error("Unexpected response format received from MEXC");
@@ -47,4 +57,16 @@ export class MexcExchangeAdapter implements ExchangeAdapter {
       quoteVolume: Number(candle[7]),
     }));
   }
+
+  async getSymbols(): Promise<string[]> {
+const response = await axios.get<MexcExchangeInfoResponse>(
+  "https://api.mexc.com/api/v3/exchangeInfo",
+  {
+    timeout: 10000,
+  }
+);
+
+return response.data.symbols.map((item) => item.symbol);
+}
+
 }
