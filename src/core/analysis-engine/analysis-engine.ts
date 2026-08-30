@@ -137,6 +137,8 @@ tradeSetup = this.tradeSetupEngineService.generate({
   direction: decision.signal,
   currentPrice: candles[candles.length - 1].close,
   atr: atr.value,
+   nearestSupport: supportResistance.nearestSupport?.price ?? null,
+  nearestResistance: supportResistance.nearestResistance?.price ?? null,
 });
 
 }

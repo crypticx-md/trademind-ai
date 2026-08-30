@@ -7,10 +7,13 @@ export interface TradeSetupInput {
   direction: TradeDirection;
   currentPrice: number;
   atr: number;
+  nearestSupport: number | null;
+nearestResistance: number | null;
 }
 
 export interface TradeSetupResult {
-  entry: number;
+  direction: TradeDirection;
+    entry: number;
   stopLoss: number;
   targets: number[];
   riskRewardRatio: number;
@@ -18,7 +21,7 @@ export interface TradeSetupResult {
 
 export class TradeSetupEngineService {
   
-    generate(input: TradeSetupInput): TradeSetupResult {
+    generate(input: TradeSetupInput): TradeSetupResult | null {
     
  if (input.atr <= 0) {
   throw new Error("ATR must be greater than zero");
@@ -56,10 +59,49 @@ const finalTarget = targets[targets.length - 1];
 
 const reward = Math.abs(finalTarget - entry);
 
-const riskRewardRatio = reward / risk;
+let riskRewardRatio = reward / risk;
+
+if (
+  input.direction === "LONG" &&
+  input.nearestResistance !== null
+) {
+  const realisticReward =
+    input.nearestResistance - entry;
+
+  const realisticRiskReward =
+    realisticReward / risk;
+    riskRewardRatio = realisticRiskReward;
+
+  if (realisticRiskReward < 2) {
+    return null;
+  }
+}
+
+if (
+  input.direction === "SHORT" &&
+  input.nearestSupport !== null
+) {
+  const realisticReward =
+    entry - input.nearestSupport;
+
+  const realisticRiskReward =
+    realisticReward / risk;
+    riskRewardRatio = realisticRiskReward;
+
+  if (realisticRiskReward < 2) {
+    return null;
+  }
+}
+
+const minimumRiskReward = 2;
+
+if (riskRewardRatio < minimumRiskReward) {
+  return null;
+}
 
 return {
-  entry,
+  direction: input.direction,
+    entry,
   stopLoss,
   targets,
   riskRewardRatio,
