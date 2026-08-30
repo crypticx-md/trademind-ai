@@ -45,6 +45,12 @@ import {
   DecisionResult,
 } from "./decision-engine/decision-engine.service";
 
+import {
+  TradeSetupEngineService,
+  TradeSetupResult,
+} from "../trade-setup-engine/trade-setup-engine.service";
+
+
 export interface AnalysisResult {
   statistics: StatisticsResult;
   indicators: {
@@ -58,6 +64,7 @@ export interface AnalysisResult {
    marketStructure: MarketStructureResult;
    supportResistance: SupportResistanceResult;
    decision: DecisionResult;
+   tradeSetup: TradeSetupResult | null;
 }
 
 export class AnalysisEngine {
@@ -70,6 +77,7 @@ export class AnalysisEngine {
   private readonly marketStructureService = new MarketStructureService();
   private readonly supportResistanceService = new SupportResistanceService();
  private readonly decisionEngineService = new DecisionEngineService();
+ private tradeSetupEngineService = new TradeSetupEngineService();
 
   analyzeCandles(candles: Candle[]): AnalysisResult {
     const closePrices = candles.map((candle) => candle.close);
@@ -121,6 +129,18 @@ if (currentPrice === undefined) {
     volume.status
   );
 
+let tradeSetup = null;
+
+if (decision.signal === "LONG" || decision.signal === "SHORT") {
+
+tradeSetup = this.tradeSetupEngineService.generate({
+  direction: decision.signal,
+  currentPrice: candles[candles.length - 1].close,
+  atr: atr.value,
+});
+
+}
+
 
    
 
@@ -140,6 +160,7 @@ if (currentPrice === undefined) {
          marketStructure,
          supportResistance,
          decision,
+         tradeSetup,
          
 
     };
