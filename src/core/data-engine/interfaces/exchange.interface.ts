@@ -1,6 +1,7 @@
 import {
   Candle,
   CandleRequest,
+  MarketType,
 } from "../../../shared/types/market.types";
 
 export interface ExchangeAdapter {
@@ -8,5 +9,8 @@ export interface ExchangeAdapter {
 
   getCandles(request: CandleRequest): Promise<Candle[]>;
 
-  getSymbols(): Promise<string[]>;
+  getSymbols(
+  marketType: MarketType
+): Promise<string[]>;
+
 }

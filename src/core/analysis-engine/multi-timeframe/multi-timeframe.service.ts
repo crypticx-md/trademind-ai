@@ -36,16 +36,19 @@ buildRequests(
       symbol,
       timeframe: profile.higherTimeframe,
       limit,
+      marketType: "FUTURES",
     },
     {
       symbol,
       timeframe: profile.trendTimeframe,
       limit,
+      marketType: "FUTURES",
     },
     {
       symbol,
       timeframe: profile.setupTimeframe,
       limit,
+      marketType: "FUTURES",
     },
   ];
 }

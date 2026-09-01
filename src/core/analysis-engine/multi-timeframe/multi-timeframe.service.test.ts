@@ -111,3 +111,4 @@ it("should analyze multiple timeframes for a SWING setup", async () => {
     "WAIT",
   ]).toContain(result.decision.signal);
 });
+

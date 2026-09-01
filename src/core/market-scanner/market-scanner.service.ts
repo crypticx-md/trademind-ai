@@ -14,8 +14,11 @@ export class MarketScannerService {
   private dataEngine = new DataEngine();
   private multiTimeframeService = new MultiTimeframeService();
 
-  async getSymbols(exchange: string): Promise<string[]> {
-  return this.dataEngine.getSymbols(exchange);
+async getSymbols(exchange: string): Promise<string[]> {
+  return this.dataEngine.getSymbols(
+    exchange,
+    "FUTURES"
+  );
 }
 getUsdtSymbols(symbols: string[]): string[] {
   return symbols.filter((symbol) =>

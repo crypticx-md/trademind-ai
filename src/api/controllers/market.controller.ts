@@ -28,6 +28,7 @@ export class MarketController {
         symbol,
         timeframe: "60m",
         limit: 250,
+        marketType: "SPOT",
       });
 
       res.status(200).json({
@@ -64,6 +65,7 @@ export class MarketController {
         symbol,
         timeframe: "60m",
         limit: 250,
+        marketType: "SPOT",
       });
 
       const analysis = analysisEngine.analyzeCandles(candles);
@@ -99,7 +101,10 @@ export class MarketController {
       ? req.query.q.toUpperCase()
       : "";
 
-  const symbols = await dataEngine.getSymbols("mexc");
+  const symbols = await dataEngine.getSymbols(
+  "mexc",
+  "SPOT"
+);
 
   const matches = symbols
   .filter((symbol) => symbol.includes(query))

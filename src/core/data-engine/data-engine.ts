@@ -1,6 +1,7 @@
 import {
   Candle,
   MarketDataRequest,
+   MarketType,
 } from "../../shared/types/market.types";
 import { ExchangeFactory } from "./factories/exchange.factory";
 
@@ -12,14 +13,18 @@ export class DataEngine {
       symbol: request.symbol,
       timeframe: request.timeframe,
       limit: request.limit,
+      marketType: request.marketType,
     });
     
   }
-  
-  async getSymbols(exchange: string): Promise<string[]> {
-  const exchangeAdapter = ExchangeFactory.create(exchange);
 
-  return exchangeAdapter.getSymbols();
+async getSymbols(
+  exchange: string,
+  marketType: MarketType
+): Promise<string[]> {
+  const adapter = ExchangeFactory.create(exchange);
+
+  return adapter.getSymbols(marketType);
 }
 
 }

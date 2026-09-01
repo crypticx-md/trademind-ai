@@ -3,6 +3,7 @@ import { ExchangeAdapter } from "../interfaces/exchange.interface";
 import {
   Candle,
   CandleRequest,
+  MarketType,
 } from "../../../shared/types/market.types";
 
 type MexcKline = [
@@ -21,6 +22,33 @@ type MexcExchangeInfoResponse = {
     symbol: string;
   }[];
 };
+
+type MexcFuturesContractResponse = {
+  success: boolean;
+  code: number;
+  data: {
+    symbol: string;
+    baseCoin: string;
+    quoteCoin: string;
+    settleCoin: string;
+    apiAllowed: boolean;
+  }[];
+};
+
+type MexcFuturesKlineResponse = {
+  success: boolean;
+  code: number;
+  data: {
+    time: number[];
+    open: number[];
+    close: number[];
+    high: number[];
+    low: number[];
+    vol: number[];
+    amount: number[];
+  };
+};
+
 
 export class MexcExchangeAdapter implements ExchangeAdapter {
   readonly name = "mexc";
@@ -44,25 +72,48 @@ export class MexcExchangeAdapter implements ExchangeAdapter {
   return mappedTimeframe;
 }
 
-  async getCandles(request: CandleRequest): Promise<Candle[]> {
+private getFuturesInterval(timeframe: string): string {
+  const intervals: Record<string, string> = {
+    "15m": "Min15",
+    "30m": "Min30",
+    "60m": "Min60",
+    "4h": "Hour4",
+    "1d": "Day1",
+    "1w": "Week1",
+  };
+
+  const interval = intervals[timeframe];
+
+  if (!interval) {
+    throw new Error(
+      `Unsupported MEXC futures timeframe: ${timeframe}`
+    );
+  }
+
+  return interval;
+}
+
+async getCandles(
+  request: CandleRequest
+): Promise<Candle[]> {
+  
+  if (request.marketType === "SPOT") {
     const response = await axios.get<MexcKline[]>(
       "https://api.mexc.com/api/v3/klines",
       {
         params: {
           symbol: request.symbol,
-          interval: this.mapTimeframe(request.timeframe),
+          interval: request.timeframe,
           limit: request.limit,
         },
         timeout: 10000,
-        
       }
-      
     );
 
-    
-
     if (!Array.isArray(response.data)) {
-      throw new Error("Unexpected response format received from MEXC");
+      throw new Error(
+        "Unexpected response format received from MEXC Spot"
+      );
     }
 
     return response.data.map((candle) => ({
@@ -77,15 +128,93 @@ export class MexcExchangeAdapter implements ExchangeAdapter {
     }));
   }
 
-  async getSymbols(): Promise<string[]> {
-const response = await axios.get<MexcExchangeInfoResponse>(
-  "https://api.mexc.com/api/v3/exchangeInfo",
-  {
-    timeout: 10000,
-  }
-);
+  const futuresSymbol =
+    request.symbol.includes("_")
+      ? request.symbol
+      : request.symbol.replace("USDT", "_USDT");
 
-return response.data.symbols.map((item) => item.symbol);
+  const interval =
+    this.getFuturesInterval(request.timeframe);
+
+  const response =
+    await axios.get<MexcFuturesKlineResponse>(
+      `https://api.mexc.com/api/v1/contract/kline/${futuresSymbol}`,
+      {
+        params: {
+          interval,
+        },
+        timeout: 10000,
+      }
+    );
+
+  if (!response.data.success) {
+    throw new Error(
+      `Failed to retrieve MEXC Futures candles for ${request.symbol}`
+    );
+  }
+
+  const data = response.data.data;
+
+  return data.time
+    .slice(-request.limit)
+    .map((time, index, times) => {
+      const sourceIndex =
+        data.time.length - times.length + index;
+
+      return {
+        openTime: time * 1000,
+        open: Number(data.open[sourceIndex]),
+        high: Number(data.high[sourceIndex]),
+        low: Number(data.low[sourceIndex]),
+        close: Number(data.close[sourceIndex]),
+        volume: Number(data.vol[sourceIndex]),
+        closeTime: time * 1000,
+        quoteVolume: Number(
+          data.amount[sourceIndex]
+        ),
+      };
+    });
+}
+
+
+ async getSymbols(
+  marketType: MarketType
+): Promise<string[]> {
+  if (marketType === "SPOT") {
+    const response = await axios.get<MexcExchangeInfoResponse>(
+      "https://api.mexc.com/api/v3/exchangeInfo",
+      {
+        timeout: 10000,
+      }
+    );
+
+    return response.data.symbols.map(
+      (item) => item.symbol
+    );
+  }
+
+  const response =
+    await axios.get<MexcFuturesContractResponse>(
+      "https://api.mexc.com/api/v1/contract/detail",
+      {
+        timeout: 10000,
+      }
+    );
+
+  if (!response.data.success) {
+    throw new Error(
+      "Failed to retrieve MEXC futures contracts"
+    );
+  }
+
+  return response.data.data
+    .filter(
+      (contract) =>
+        contract.quoteCoin === "USDT"
+    )
+    .map((contract) =>
+      contract.symbol.replace("_", "")
+    );
 }
 
 }

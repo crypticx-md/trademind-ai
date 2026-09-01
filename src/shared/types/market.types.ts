@@ -22,11 +22,16 @@ export type TradingStyle =
   | "DAY_TRADE"
   | "SWING";
 
+export type MarketType =
+  | "SPOT"
+  | "FUTURES";
+
 
 export interface CandleRequest {
   symbol: string;
   timeframe: Timeframe;
   limit: number;
+   marketType: MarketType;
 }
 
 export interface MarketDataRequest extends CandleRequest {
