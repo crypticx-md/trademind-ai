@@ -69,6 +69,28 @@ if (
   trendAndStructureScore += 20;
 }
 
+const rangingTrendCredit =
+  trend.strength === "STRONG"
+    ? 40
+    : trend.strength === "MODERATE"
+      ? 30
+      : 20;
+
+
+if (
+  trend.direction === "BULLISH" &&
+  marketStructure.direction === "RANGING"
+) {
+score += rangingTrendCredit;
+trendAndStructureScore += rangingTrendCredit;}
+
+if (
+  trend.direction === "BEARISH" &&
+  marketStructure.direction === "RANGING"
+) {
+score -= rangingTrendCredit;
+trendAndStructureScore -= rangingTrendCredit;}
+
 if (rsi >= 55 && rsi <= 70) {
   score += 10;
   rsiScore += 10;

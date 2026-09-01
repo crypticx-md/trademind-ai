@@ -6,5 +6,9 @@ const router = Router();
 router.get("/candles", MarketController.getCandles);
 router.get("/analysis", MarketController.getAnalysis);
 router.get("/search", MarketController.searchSymbols);
+router.get(
+  "/multi-timeframe-analysis",
+  MarketController.getMultiTimeframeAnalysis
+);
 
 export default router;

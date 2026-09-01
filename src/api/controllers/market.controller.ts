@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import { AnalysisEngine } from "../../core/analysis-engine/analysis-engine";
 import { DataEngine } from "../../core/data-engine/data-engine";
+import { MultiTimeframeService } from "../../core/analysis-engine/multi-timeframe/multi-timeframe.service";
 
 const dataEngine = new DataEngine();
 const analysisEngine = new AnalysisEngine();
+const multiTimeframeService = new MultiTimeframeService();
 
 export class MarketController {
   static async getCandles(
@@ -122,4 +124,45 @@ export class MarketController {
 }
 
 }
+
+static async getMultiTimeframeAnalysis(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const symbol =
+      typeof req.query.symbol === "string"
+        ? req.query.symbol.toUpperCase()
+        : "BTCUSDT";
+
+    const style =
+      typeof req.query.style === "string"
+        ? req.query.style.toUpperCase()
+        : "SCALP";
+
+    const result = await multiTimeframeService.analyze(
+      "mexc",
+      symbol,
+      style as "SCALP" | "DAY_TRADE" | "SWING"
+    );
+
+    res.status(200).json({
+      success: true,
+      market: {
+        exchange: "mexc",
+        symbol,
+        style,
+      },
+      result,
+    });
+  } catch (error) {
+    console.error("Multi-timeframe analysis error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to analyze multi-timeframe market data.",
+    });
+  }
+}
+
 }

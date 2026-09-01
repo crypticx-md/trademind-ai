@@ -203,3 +203,190 @@ expect(result.breakdown.supportResistance).toBe(-20);
 });
 
 });
+
+it("should give partial bullish credit when trend is BULLISH and structure is RANGING", () => {
+  const service = new DecisionEngineService();
+
+  const result = service.analyze(
+    {
+      direction: "BULLISH",
+      strength: "MODERATE",
+      score: 50,
+      confidence: 75,
+      
+    },
+    {
+      direction: "RANGING",
+      higherHighs: 0,
+      higherLows: 0,
+      lowerHighs: 0,
+      lowerLows: 0,
+    },
+    {
+      nearestSupport: null,
+      nearestResistance: null,
+      bestSupport: null,
+      bestResistance: null,
+      levels: [],
+    },
+    50,
+    "AVERAGE"
+  );
+
+  expect(result.breakdown.trendAndStructure).toBe(30);
+});
+
+it("should give stronger bullish credit when trend is STRONG and structure is RANGING", () => {
+  const service = new DecisionEngineService();
+
+  const result = service.analyze(
+    {
+      direction: "BULLISH",
+      strength: "STRONG",
+      score: 70,
+      confidence: 85,
+    },
+    {
+      direction: "RANGING",
+      higherHighs: 0,
+      higherLows: 0,
+      lowerHighs: 0,
+      lowerLows: 0,
+    },
+    {
+      nearestSupport: null,
+      nearestResistance: null,
+      bestSupport: null,
+      bestResistance: null,
+      levels: [],
+    },
+    50,
+    "AVERAGE"
+  );
+
+  expect(result.breakdown.trendAndStructure).toBe(40);
+});
+
+it("should give weaker bullish credit when trend is WEAK and structure is RANGING", () => {
+  const service = new DecisionEngineService();
+
+  const result = service.analyze(
+    {
+      direction: "BULLISH",
+      strength: "WEAK",
+      score: 30,
+      confidence: 55,
+    },
+    {
+      direction: "RANGING",
+      higherHighs: 0,
+      higherLows: 0,
+      lowerHighs: 0,
+      lowerLows: 0,
+    },
+    {
+      nearestSupport: null,
+      nearestResistance: null,
+      bestSupport: null,
+      bestResistance: null,
+      levels: [],
+    },
+    50,
+    "AVERAGE"
+  );
+
+  expect(result.breakdown.trendAndStructure).toBe(20);
+});
+
+it("should give partial bearish credit when trend is BEARISH and structure is RANGING", () => {
+  const service = new DecisionEngineService();
+
+  const result = service.analyze(
+    {
+      direction: "BEARISH",
+      strength: "MODERATE",
+      score: 50,
+      confidence: 75,
+    },
+    {
+      direction: "RANGING",
+      higherHighs: 0,
+      higherLows: 0,
+      lowerHighs: 0,
+      lowerLows: 0,
+    },
+    {
+      nearestSupport: null,
+      nearestResistance: null,
+      bestSupport: null,
+      bestResistance: null,
+      levels: [],
+    },
+    50,
+    "AVERAGE"
+  );
+
+  expect(result.breakdown.trendAndStructure).toBe(-30);
+});
+
+it("should give stronger bearish credit when trend is STRONG and structure is RANGING", () => {
+  const service = new DecisionEngineService();
+
+  const result = service.analyze(
+    {
+      direction: "BEARISH",
+      strength: "STRONG",
+      score: 70,
+      confidence: 85,
+    },
+    {
+      direction: "RANGING",
+      higherHighs: 0,
+      higherLows: 0,
+      lowerHighs: 0,
+      lowerLows: 0,
+    },
+    {
+      nearestSupport: null,
+      nearestResistance: null,
+      bestSupport: null,
+      bestResistance: null,
+      levels: [],
+    },
+    50,
+    "AVERAGE"
+  );
+
+  expect(result.breakdown.trendAndStructure).toBe(-40);
+});
+
+it("should give weaker bearish credit when trend is WEAK and structure is RANGING", () => {
+  const service = new DecisionEngineService();
+
+  const result = service.analyze(
+    {
+      direction: "BEARISH",
+      strength: "WEAK",
+      score: 30,
+      confidence: 55,
+    },
+    {
+      direction: "RANGING",
+      higherHighs: 0,
+      higherLows: 0,
+      lowerHighs: 0,
+      lowerLows: 0,
+    },
+    {
+      nearestSupport: null,
+      nearestResistance: null,
+      bestSupport: null,
+      bestResistance: null,
+      levels: [],
+    },
+    50,
+    "AVERAGE"
+  );
+
+  expect(result.breakdown.trendAndStructure).toBe(-20);
+});

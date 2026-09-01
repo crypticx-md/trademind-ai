@@ -25,13 +25,32 @@ type MexcExchangeInfoResponse = {
 export class MexcExchangeAdapter implements ExchangeAdapter {
   readonly name = "mexc";
 
+  private mapTimeframe(timeframe: string): string {
+  const timeframeMap: Record<string, string> = {
+    "15m": "15m",
+    "30m": "30m",
+    "60m": "60m",
+    "4h": "4h",
+    "1d": "1d",
+    "1w": "1W",
+  };
+
+  const mappedTimeframe = timeframeMap[timeframe];
+
+  if (!mappedTimeframe) {
+    throw new Error(`Unsupported MEXC timeframe: ${timeframe}`);
+  }
+
+  return mappedTimeframe;
+}
+
   async getCandles(request: CandleRequest): Promise<Candle[]> {
     const response = await axios.get<MexcKline[]>(
       "https://api.mexc.com/api/v3/klines",
       {
         params: {
           symbol: request.symbol,
-          interval: request.timeframe,
+          interval: this.mapTimeframe(request.timeframe),
           limit: request.limit,
         },
         timeout: 10000,

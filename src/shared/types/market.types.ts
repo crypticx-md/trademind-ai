@@ -9,9 +9,23 @@ export interface Candle {
   quoteVolume: number;
 }
 
+export type Timeframe =
+  | "15m"
+  | "30m"
+  | "60m"
+  | "4h"
+  | "1d"
+  | "1w";
+
+export type TradingStyle =
+  | "SCALP"
+  | "DAY_TRADE"
+  | "SWING";
+
+
 export interface CandleRequest {
   symbol: string;
-  timeframe: string;
+  timeframe: Timeframe;
   limit: number;
 }
 
