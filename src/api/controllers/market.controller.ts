@@ -2,10 +2,14 @@ import { Request, Response } from "express";
 import { AnalysisEngine } from "../../core/analysis-engine/analysis-engine";
 import { DataEngine } from "../../core/data-engine/data-engine";
 import { MultiTimeframeService } from "../../core/analysis-engine/multi-timeframe/multi-timeframe.service";
+import { MarketScannerService } from "../../core/market-scanner/market-scanner.service";
+import { TradingStyle } from "../../shared/types/market.types";
 
 const dataEngine = new DataEngine();
 const analysisEngine = new AnalysisEngine();
 const multiTimeframeService = new MultiTimeframeService();
+const marketScannerService = new MarketScannerService();
+
 
 export class MarketController {
   static async getCandles(
@@ -161,6 +165,45 @@ static async getMultiTimeframeAnalysis(
     res.status(500).json({
       success: false,
       message: "Unable to analyze multi-timeframe market data.",
+    });
+  }
+}
+
+static async scanMarkets(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const style =
+      typeof req.query.style === "string"
+        ? req.query.style.toUpperCase()
+        : "SCALP";
+
+ const maximumResults =
+  typeof req.query.maximumResults === "string"
+    ? Number(req.query.maximumResults)
+    : 5;
+
+const results = await marketScannerService.scan(
+  "mexc",
+  style as TradingStyle,
+  maximumResults
+);
+
+    res.status(200).json({
+      success: true,
+      exchange: "mexc",
+      style,
+      maximumResults,
+      count: results.length,
+      results,
+    });
+  } catch (error) {
+    console.error("Market scanner error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to scan markets.",
     });
   }
 }

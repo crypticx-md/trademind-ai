@@ -10,5 +10,9 @@ router.get(
   "/multi-timeframe-analysis",
   MarketController.getMultiTimeframeAnalysis
 );
+router.get(
+  "/scanner",
+  MarketController.scanMarkets
+);
 
 export default router;
