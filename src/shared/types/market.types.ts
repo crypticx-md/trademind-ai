@@ -10,6 +10,7 @@ export interface Candle {
 }
 
 export type Timeframe =
+    "5m" 
   | "15m"
   | "30m"
   | "60m"

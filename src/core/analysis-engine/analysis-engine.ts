@@ -50,6 +50,11 @@ import {
   TradeSetupResult,
 } from "../trade-setup-engine/trade-setup-engine.service";
 
+import {
+  EntryQualityResult,
+  EntryQualityService,
+} from "./entry-quality/entry-quality.service";
+
 
 export interface AnalysisResult {
   statistics: StatisticsResult;
@@ -65,6 +70,7 @@ export interface AnalysisResult {
    supportResistance: SupportResistanceResult;
    decision: DecisionResult;
    tradeSetup: TradeSetupResult | null;
+   entryQuality: EntryQualityResult;
 }
 
 export class AnalysisEngine {
@@ -78,6 +84,8 @@ export class AnalysisEngine {
   private readonly supportResistanceService = new SupportResistanceService();
  private readonly decisionEngineService = new DecisionEngineService();
  private tradeSetupEngineService = new TradeSetupEngineService();
+ private readonly entryQualityService =
+  new EntryQualityService();
 
   analyzeCandles(candles: Candle[]): AnalysisResult {
     const closePrices = candles.map((candle) => candle.close);
@@ -143,6 +151,21 @@ tradeSetup = this.tradeSetupEngineService.generate({
 
 }
 
+const ema20 = ema.find(
+  (item) => item.period === 20
+);
+
+if (!ema20) {
+  throw new Error("EMA20 was not calculated.");
+}
+
+const entryQuality =
+  this.entryQualityService.analyze(
+    currentPrice,
+    ema20.value,
+    atr.value,
+    candles,
+  );
 
    
 
@@ -163,6 +186,7 @@ tradeSetup = this.tradeSetupEngineService.generate({
          supportResistance,
          decision,
          tradeSetup,
+         entryQuality,
          
 
     };

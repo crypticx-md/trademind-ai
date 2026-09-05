@@ -74,6 +74,7 @@ export class MexcExchangeAdapter implements ExchangeAdapter {
 
 private getFuturesInterval(timeframe: string): string {
   const intervals: Record<string, string> = {
+    "5m": "Min5",
     "15m": "Min15",
     "30m": "Min30",
     "60m": "Min60",
@@ -96,7 +97,7 @@ private getFuturesInterval(timeframe: string): string {
 async getCandles(
   request: CandleRequest
 ): Promise<Candle[]> {
-  
+
   if (request.marketType === "SPOT") {
     const response = await axios.get<MexcKline[]>(
       "https://api.mexc.com/api/v3/klines",
